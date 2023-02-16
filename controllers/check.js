@@ -26,38 +26,46 @@ export async function check(request, response) {
       },
     );
 
-    const result = await resultFetch.json();
+    try {
+      const result = await resultFetch.json();
 
-    setTimeout(async () => {
-      const resultFetch = await fetch(
-        `https://business.tinkoff.ru/api/v1/public/partner/innScoring/${result?.result?.scoreId}`,
-        {
-          method: 'GET',
+      setTimeout(async () => {
+        const resultFetch = await fetch(
+          `https://business.tinkoff.ru/api/v1/public/partner/innScoring/${result?.result?.scoreId}`,
+          {
+            method: 'GET',
 
-          headers: {
-            Authorization: auth,
+            headers: {
+              Authorization: auth,
+            },
           },
-        },
-      );
+        );
 
-      const resultScoring = await resultFetch.json();
+        const resultScoring = await resultFetch.json();
 
-      const status = resultScoring?.result?.result;
+        const status = resultScoring?.result?.result;
 
-      const finaly =
-        resultFetch.status !== 200
-          ? 'Хз'
-          : status === 'APPROVED'
-          ? 'Да'
-          : status === 'DUPLICATE'
-          ? 'Нет'
-          : 'Хз';
+        const finaly =
+          resultFetch.status !== 200
+            ? 'Хз'
+            : status === 'APPROVED'
+            ? 'Да'
+            : status === 'DUPLICATE'
+            ? 'Нет'
+            : 'Хз';
 
+        response.status(200).send({
+          payload: { phone, inn },
+
+          result: finaly,
+        });
+      }, 5000);
+    } catch {
       response.status(200).send({
         payload: { phone, inn },
 
-        result: finaly,
+        result: 'хз',
       });
-    }, 5000);
+    }
   });
 }
